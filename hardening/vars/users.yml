@@ -2,31 +2,33 @@ root_pwd: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlT
 
 # define only one chief admin
 users_admin:
-  - {
-      name: a007,
-      comment: "John Doe (admin),,,,administrative",
-      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
-      state: present,
-      chief: yes,
-    }
-  - {
-      name: a123,
-      comment: "Joe Smith (admin),,,,administrative",
-      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
-      state: present,
-      chief: no,
-    }
+  - name: a007
+    uid: 1100
+    comment: "John Doe (admin),,,,administrative"
+    hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1"
+    state: present
+    remove: no
+    chief: yes
+
+  - name: a123
+    uid: 1101
+    comment: "Joe Smith (admin),,,,administrative"
+    hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1"
+    state: present
+    remove: no
+    chief: no
 
 users_usual:
-  - {
-      name: u007,
-      comment: "John Doe,,,,normal user",
-      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
-      state: present,
-    }
-  - {
-      name: u123,
-      comment: "Joe Smith,,,,normal user",
-      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
-      state: present,
-    }
+  - name: u007
+    uid: 2100
+    comment: "John Doe,,,,normal user"
+    hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1"
+    state: present
+    remove: no
+
+  - name: u123
+    uid: 2101
+    comment: "Joe Smith,,,,normal user"
+    hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1"
+    state: present
+    remove: no

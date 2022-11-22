@@ -4,6 +4,15 @@
   include_vars: users.yml
   tags:
     - users
+    - wip
+
+- name: user dict testing
+  debug:
+    msg: "Name is: {{item.name}}"
+  with_items:
+    - "{{users_admin}}"
+  tags:
+    - wip
 
 - name: change root password
   user:
@@ -17,13 +26,15 @@
   ansible.builtin.user:
     comment: "{{ item.comment }}"
     name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    remove: "{{ item.remove }}"
     password: "{{ item.hash }}"
     password_expire_min: "{{ pwd_age_min }}"
     password_expire_max: "{{ pwd_age_max }}"
     update_password: on_create
     shell: /bin/bash
     append: yes
-    groups: sudo
+    groups: sudo,users
     state: "{{ item.state }}"
   with_items:
     - "{{users_admin}}"
@@ -43,12 +54,15 @@
   ansible.builtin.user:
     comment: "{{ item.comment }}"
     name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    remove: "{{ item.remove }}"
     password: "{{ item.hash }}"
     password_expire_min: "{{ pwd_age_min }}"
     password_expire_max: "{{ pwd_age_max }}"
     update_password: on_create
     shell: /bin/bash
     append: yes
+    groups: users
     state: "{{ item.state }}"
   with_items:
     - "{{users_usual}}"
