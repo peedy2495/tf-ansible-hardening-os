@@ -1,4 +1,5 @@
-# This playbook is for hardening linux systems. Refer current supported distributions in top level [README.md](https://github.com/peedy2495/tf-ansible-hardening-os)
+# This playbook is for hardening linux systems.
+Refer current supported distributions in top level [README.md](https://github.com/peedy2495/tf-ansible-hardening-os)
 
 The playbook has been embed in a terraform deployment to test the rollout behaviours in an virtual enviroment, first.
 Using terraform, you have to provide a cloud-init template in your virtual environment.
