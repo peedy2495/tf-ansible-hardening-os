@@ -1,0 +1,6 @@
+id_*
+ansible-antirootkits
+ansible-role-clamav
+.terraform*
+terraform.*
+token.export

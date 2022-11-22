@@ -1,0 +1,61 @@
+# create new password hashes before runing this task
+
+- name: load users
+  include_vars: users.yml
+  tags:
+    - users
+
+- name: change root password
+  user:
+    name: "root"
+    update_password: always
+    password: "{{ root_pwd }}"
+  tags:
+    - users
+
+- name: create administrative users
+  ansible.builtin.user:
+    comment: "{{ item.comment }}"
+    name: "{{ item.name }}"
+    password: "{{ item.hash }}"
+    password_expire_min: "{{ pwd_age_min }}"
+    password_expire_max: "{{ pwd_age_max }}"
+    update_password: on_create
+    shell: /bin/bash
+    append: yes
+    groups: sudo
+    state: "{{ item.state }}"
+  with_items:
+    - "{{users_admin}}"
+  tags:
+    - users
+
+- name: set admin chief
+  set_fact:
+    chief_admin: "{{ item.name }}"
+  when: ({{ item.chief }}) and "{{ item.state }}" == "present"
+  with_items:
+    - "{{users_admin}}"
+  tags:
+    - users
+
+- name: create usual users
+  ansible.builtin.user:
+    comment: "{{ item.comment }}"
+    name: "{{ item.name }}"
+    password: "{{ item.hash }}"
+    password_expire_min: "{{ pwd_age_min }}"
+    password_expire_max: "{{ pwd_age_max }}"
+    update_password: on_create
+    shell: /bin/bash
+    append: yes
+    state: "{{ item.state }}"
+  with_items:
+    - "{{users_usual}}"
+  tags:
+    - users
+
+- name: keep access to home directories more restrictive
+  shell: chmod -R o-rwx /home/* /root/
+  tags:
+    - users

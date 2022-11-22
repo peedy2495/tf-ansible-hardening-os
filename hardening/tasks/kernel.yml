@@ -1,0 +1,255 @@
+- name: enable kaslr
+  block:
+    - name: boot-option - check if kaslr is already disabled
+      shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "kaslr"
+      register: boot_kaslr_status
+      ignore_errors: true
+
+    - name: boot-option - enable kaslr
+      lineinfile:
+        path: "/etc/default/grub"
+        regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"'
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 kaslr"'
+        backrefs: yes
+      when: boot_kaslr_status.stdout == "0"
+
+    - name: update-grub
+      shell: update-grub
+      when: boot_kaslr_status.stdout == "0"
+  notify: reboot system
+  tags:
+    - kernel
+
+- name: modify config
+  lineinfile:
+    path: /etc/sysctl.d/98-sec-kernel.conf
+    create: yes
+    mode: 644
+    owner: root
+    group: root
+    regexp: "(.*){{ item.variable }}\ "
+    line: "{{ item.variable }} = {{ item.value }}"
+    state: present
+  with_items:
+    - variable: "kernel.randomize_va_space"
+      value: "2"
+    # hard- / hymlink, fifo, regular protection, ptrace scope
+    - variable: "fs.protected_hardlinks"
+      value: "1"
+    - variable: "fs.protected_symlinks"
+      value: "1"
+    - variable: "fs.protected_fifos"
+      value: "2"
+    - variable: "fs.protected_regular"
+      value: "2"
+    - variable: "kernel.yama.ptrace_scope"
+      value: "3"
+    # kernel-pointer, dmesg
+    - variable: "kernel.kptr_restrict"
+      value: "1"
+    - variable: "kernel.dmesg_restrict"
+      value: "1"
+    # kernel und process-crashdumps
+    - variable: "fs.suid_dumpable"
+      value: "0"
+    # berkeley packet filter (bpf)
+    - variable: "kernel.unprivileged_bpf_disabled"
+      value: "1"
+    - variable: "net.core.bpf_jit_enable"
+      value: "1"
+    - variable: "net.core.bpf_jit_harden"
+      value: "1"
+  notify: reboot system
+  tags:
+    - kernel
+
+- name: modify limits
+  lineinfile:
+    path: /etc/security/limits.conf
+    create: yes
+    mode: 644
+    owner: root
+    group: root
+    regexp: "(.*)hard(.*)core(.*)"
+    line: "*                hard    core            0"
+    state: present
+  notify: reboot system
+  tags:
+    - kernel
+
+- name: default blacklisting modules
+  block:
+    - name: create a virgin blacklist file
+      file:
+        path: /etc/modprobe.d/blacklist-hardening.conf
+        mode: 644
+        owner: root
+        group: root
+        state: touch
+
+    - name: modify blacklist - adding undesirable modules
+      lineinfile:
+        path: /etc/modprobe.d/blacklist-hardening.conf
+        regexp: "install {{ item }}\ "
+        line: "install {{ item }} /bin/true"
+        state: present
+      with_items:
+        # unused filesystems
+        - af_802154
+        - ath
+        - atm
+        - ax25
+        - appletalk
+        - brcm80211
+        - can
+        - cifs
+        - cramfs
+        - dccp
+        - decnet
+        - dv1394
+        - econet
+        - firewire-ohci
+        - firewire-sbp2
+        - freevxfs
+        - gfs2
+        - hfs
+        - hfsplus
+        - ipx
+        - iwlegacy
+        - iwlwifi
+        - jffs2
+        - ksmbd
+        - mwifiex
+        - netrom
+        - nfs
+        - nfsv3
+        - nfsv4
+        - n-hdlc
+        - ohci1394
+        - psnap
+        - p8022
+        - p8023
+        - raw1394
+        - rds
+        - rose
+        - rt1818x
+        - rt2x00
+        - rtlwifi
+        - sctp
+        - spb2
+        - squashfs
+        - tipc
+        - udf
+        - usb-storage
+        - video1394
+        - x25
+        - vivid
+        - bluetooth
+        - btusb
+        - uvcvideo
+    - name: modify blacklist - activate retroactice needs
+      lineinfile:
+        path: /etc/modprobe.d/blacklist-hardening.conf
+        regexp: "install {{ item }}\ "
+        line: "install {{ item }} /bin/true"
+        state: absent
+      with_items:
+        # usb media needed
+        - usb-storage
+  notify: reboot system
+  tags:
+    - kernel
+
+- name: uninstall kernel extra modules
+  block:
+    - name: get current kernel version
+      shell: uname -r
+      ignore_errors: true
+      register: kernel_version
+    - name: remove kernel extra modules
+      apt:
+        pkg:
+          - "linux-modules-extra-{{ kernel_version.stdout }}"
+        state: absent
+        purge: yes
+        update_cache: no
+    - name: autoremove orphanned packages
+      apt:
+        autoremove: yes
+    - name: keep microcode updates
+      apt:
+        pkg:
+          - intel-microcode
+          - amd64-microcode
+  when: rm_extra_modules and
+    not (ansible_distribution == 'Ubuntu' and os_type == 'desktop')
+  notify: reboot system
+  tags:
+    - kernel
+
+- name: prevent loading modules after boot
+  block:
+    - name: deploy kernel-modules-disabled.service
+      copy:
+        src: kernel-modules-disabled.service
+        dest: /etc/systemd/system/
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+    - name: start kernel-modules-disabled.service
+      systemd:
+        name: kernel-modules-disabled.service
+        daemon_reload: yes
+        enabled: yes
+        state: started
+  notify: reboot system
+  tags:
+    - kernel
+
+- name: blacklist unused modules
+  block:
+    - name: determine available modules
+      shell: find /lib/modules/$(uname -r)/ -type f -name *.ko -printf "%f\n" | sed s/\.ko// | sort
+      register: modules_available
+    - name: determine loaded modules
+      shell: lsmod | awk '{print $1}' | sort
+      register: modules_loaded
+
+    - name: write deltas to blacklist
+      lineinfile:
+        path: /etc/modprobe.d/blacklist-unused.conf
+        create: yes
+        owner: root
+        group: root
+        mode: 0640
+        line: "install {{ item }} /bin/true"
+      when: "item not in modules_loaded.stdout_lines"
+      loop: "{{modules_available.stdout_lines}}"
+
+    - name: unused blacklist - exceptions
+      lineinfile:
+        path: /etc/modprobe.d/blacklist-unused.conf
+        regexp: "install {{ item }}\ "
+        line: "install {{ item }} /bin/true"
+        state: absent
+  when: blacklist_unused
+  notify:
+    - clear caches
+  tags:
+    - kernel
+
+- name: deactivate magic sysrq
+  lineinfile:
+    path: /etc/sysctl.d/10-magic-sysrq.conf
+    regexp: "^kernel.sysrq"
+    line: "kernel.sysrq = 0"
+    state: present
+  notify: reboot system
+  tags:
+    - kernel
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - kernel

@@ -1,0 +1,8 @@
+- name: reboot system
+  include_tasks: reboot.yml
+
+- name: clear caches
+  include_tasks: clear_caches.yml
+
+- name: dconf update
+  include_tasks: dconf_update.yml

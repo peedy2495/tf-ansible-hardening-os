@@ -1,0 +1,125 @@
+- name: ansible rootkits
+  block:
+    - name: pull locally ansible-rootkits rule
+      git:
+        repo: https://github.com/mablanco/ansible-antirootkits.git
+        dest: "{{ playbook_dir }}/ansible-antirootkits"
+        clone: yes
+        recursive: yes
+        update: yes
+        force: yes
+        version: master
+      ignore_errors: true
+
+    - name: modify ansible-rootkits role vars
+      lineinfile:
+        path: "{{ playbook_dir }}/ansible-antirootkits/defaults/main.yml"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "rkhunter:"
+          line: "rkhunter: true"
+        - regexp: "chkrootkit:"
+          line: "chkrootkit: true"
+        - regexp: "unhide:"
+          line: "unhide: true"
+        - regexp: "shelldetector:"
+          line: "shelldetector: false"
+        - regexp: "antirootkits_mail_to:"
+          line: "antirootkits_mail_to: 'root@localhost'"
+        - regexp: "antirootkits_mail_from:"
+          line: "antirootkits_mail_from: 'root@localhost'"
+  connection: local
+  vars:
+    ansible_become: false
+  tags:
+    - ext_roles
+    - antirootkits
+
+- name: play ansible-antirootkits role
+  import_role:
+    name: ansible-antirootkits
+  tags:
+    - ext_roles
+    - antirootkits
+
+- name: rkhunter - whitelisted processes
+  lineinfile:
+    path: "/etc/rkhunter.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "(^$|^#)ALLOWIPCPROC="
+      line: "ALLOWIPCPROC=/usr/bin/gnome-shell"
+  tags:
+    - ext_roles
+    - antirootkits
+
+- name: ansible rootkits
+  block:
+    - name: pull locally ansible-role-clamav rule
+      git:
+        repo: https://github.com/geerlingguy/ansible-role-clamav.git
+        dest: "{{ playbook_dir }}/ansible-role-clamav"
+        clone: yes
+        recursive: yes
+        update: yes
+        force: yes
+        version: master
+      ignore_errors: true
+  connection: local
+  vars:
+    ansible_become: false
+  tags:
+    - ext_roles
+    - clamav
+
+- name: play ansible-role-clamav role
+  import_role:
+    name: ansible-role-clamav
+  tags:
+    - ext_roles
+    - clamav
+
+- name: clamav - configure freshclam for local signatue caching 1/2
+  replace:
+    path: /etc/clamav/freshclam.conf
+    regexp: "(^{{ item }}.*)"
+    replace: '#\1'
+  with_items:
+    - "DatabaseDirectory"
+  when: clamav_offlinedb
+  tags:
+    - ext_roles
+
+- name: clamav - configure freshclam for local signatue caching 2/2
+  lineinfile:
+    path: /etc/clamav/freshclam.conf
+    regexp: "(^{{ item.var }})(.*)$"
+    line: "{{ item.var }} {{ item.value }}"
+    state: present
+  with_items:
+    - var: "PrivateMirror"
+      value: "{{ clamav_localcache }}"
+    - var: "ScriptedUpdates"
+      value: "no"
+  when: clamav_offlinedb
+  tags:
+    - ext_roles
+
+- name: clamav - update signatures
+  service:
+    name: clamav-freshclam
+    state: restarted
+  tags:
+    - ext_roles
+    - clamav
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - ext_roles
+    - antirootkits
+    - clamav

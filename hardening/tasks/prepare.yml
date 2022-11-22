@@ -1,0 +1,31 @@
+- name: restrict playbook for debian based distributions
+  block:
+    - name: "End play"
+      debug:
+        msg: "Target system isn't debian based ... exit"
+    - meta: end_play
+  when: ansible_facts['os_family'] != "Debian"
+
+- name: init variable os_type
+  set_fact:
+    os_type: ""
+
+- name: get ubuntu distribution type
+  block:
+    - name: looking for desktop installation
+      shell: apt list --installed |grep ubuntu-desktop
+      register: search_desktop
+
+    - name: set os-type - desktop
+      set_fact:
+        os_type: desktop
+      when: search_desktop.stdout_lines is search("desktop")
+
+    - name: set os-type - server
+      set_fact:
+        os_type: server
+      when: search_desktop.stdout_lines is not search("desktop")
+
+  when: ansible_distribution == 'Ubuntu'
+  tags:
+    - prepare

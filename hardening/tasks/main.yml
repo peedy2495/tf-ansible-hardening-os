@@ -1,0 +1,44 @@
+- name: preparing
+  import_tasks: prepare.yml
+
+- name: updater config
+  import_tasks: updates.yml
+
+- name: preparing drives
+  import_tasks: volumes.yml
+
+- name: set native repositories via nexus
+  import_tasks: repos.yml
+
+- name: software
+  import_tasks: software.yml
+
+- name: networking
+  import_tasks: network.yml
+
+- name: users
+  import_tasks: users.yml
+
+- name: pull and run external roles out of github
+  import_tasks: ext_roles.yml
+
+- name: mailing
+  import_tasks: mailing.yml
+
+- name: misc system configurations
+  import_tasks: system.yml
+
+- name: sudo
+  import_tasks: sudo.yml
+
+- name: telemetry
+  import_tasks: telemetry.yml
+
+- name: time
+  import_tasks: time.yml
+
+- name: kernel
+  import_tasks: kernel.yml
+
+- name: restrictive logins
+  import_tasks: logins.yml

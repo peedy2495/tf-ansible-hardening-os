@@ -1,0 +1,32 @@
+- name: installing mail utilities
+  apt:
+    pkg:
+      - mailutils
+    state: present
+    update_cache: yes
+  tags:
+    - mailing
+
+- name: shell - set MAIL variable for all users
+  lineinfile:
+    path: /etc/profile.d/mail.sh
+    line: "export MAIL=$HOME/Maildir/"
+    state: present
+    create: yes
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - mailing
+
+- name: system - create mail forwarding from root to major administrative user
+  lineinfile:
+    path: /root/.forward
+    create: yes
+    mode: 640
+    owner: root
+    group: root
+    line: "{{ chief_admin }}@localhost"
+    state: present
+  tags:
+    - mailing

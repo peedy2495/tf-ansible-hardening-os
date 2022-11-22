@@ -1,0 +1,34 @@
+- name: force users using sudo to be a member of group root
+  replace:
+    path: /etc/pam.d/su
+    regexp: "(^# auth       required   pam_wheel.so)$"
+    replace: "auth       required   pam_wheel.so"
+  tags:
+    - sudo
+
+- name: allow using sudo in terminals, only
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        requiretty"
+    state: present
+  tags:
+    - sudo
+
+- name: prevent backround forking for sudo
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        use_pty"
+    state: present
+  tags:
+    - sudo
+
+- name: for running sudo use root password
+  lineinfile:
+    path: /etc/sudoers
+    insertafter: "secure_path"
+    line: "Defaults        rootpw"
+    state: present
+  tags:
+    - sudo

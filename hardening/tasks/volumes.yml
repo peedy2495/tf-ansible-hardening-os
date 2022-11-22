@@ -1,0 +1,52 @@
+- name: prepare drives in virtual environments
+  block:
+    - name: expanding extended partition
+      command: growpart /dev/sda 2
+      ignore_errors: true
+
+    - name: expanding root partition
+      command: growpart /dev/sda 5
+      ignore_errors: true
+
+    - name: expanding root filesystem
+      command: resize2fs /dev/sda5
+      ignore_errors: true
+  when: virt_expand_volumes
+  tags:
+    - volumes
+    - drives
+
+- name: modifying fstab
+  block:
+    - name: fstab - Define /tmp for tmpfs
+      lineinfile:
+        state: present
+        path: "/etc/fstab"
+        line: "tmpfs                             /tmp              tmpfs     rw,relatime,nodev,noexec,nosuid,size={{ tmpfs_size_tmp }}      0       0"
+
+    - name: fstab - Define /var/crash for tmpfs
+      lineinfile:
+        state: present
+        path: "/etc/fstab"
+        line: "tmpfs                             /var/crash        tmpfs     rw,relatime,nodev,noexec,nosuid,size={{ tmpfs_size_crash }}      0       0"
+
+    - name: fstab - Define /dev/shm for tmpfs
+      lineinfile:
+        state: present
+        path: "/etc/fstab"
+        line: "tmpfs                             /dev/shm          tmpfs     rw,relatime,nodev,noexec,nosuid,size={{ tmpfs_size_shm }}      0       0"
+
+    - name: fstab - Define /run for tmpfs
+      lineinfile:
+        state: present
+        path: "/etc/fstab"
+        line: "tmpfs                             /run              tmpfs     rw,relatime,nodev,noexec,nosuid,size={{ tmpfs_size_run }}      0       0"
+
+    - name: fstab - secure proc
+      lineinfile:
+        state: present
+        path: "/etc/fstab"
+        line: "proc                             /proc              proc      rw,relatime,nodev,noexec,nosuid,hidepid=2                      0       0"
+  tags:
+    - volumes
+    - fstab

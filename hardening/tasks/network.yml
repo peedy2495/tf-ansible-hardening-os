@@ -1,0 +1,253 @@
+- name: dns - speed up ssh sessions without avahi
+  lineinfile:
+    path: /etc/nsswitch.conf
+    regexp: "hosts:"
+    line: "hosts:          files dns"
+    state: present
+  tags:
+    - network
+
+- name: setting hostname
+  block:
+    - name: set hostname
+      hostname:
+        name: "{{ inventory_hostname }}.{{ domain }}"
+        use: systemd
+      notify: reboot system
+
+    - name: correct local name resolution
+      replace:
+        path: /etc/hosts
+        regexp: "(^127.0.1.1)(.*)"
+        replace: '\1 {{ inventory_hostname }} {{ inventory_hostname }}.{{ domain }}'
+  when: set_hostname
+  tags:
+    - network
+
+- name: add Nexus for internal name resolving
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ nexus_proxy }} nexus nexus"
+    state: present
+  tags:
+    - network
+    - etc-hosts
+
+- name: sysctl-network - check for existent config file
+  stat:
+    path: /etc/sysctl.d/98-sec-net.conf
+  register: sysctl_network
+  tags:
+    - network
+
+- name: harden network devices
+  block:
+    - name: create a virgin configfile
+      file:
+        path: /etc/sysctl.d/98-sec-net.conf
+        mode: 644
+        owner: root
+        group: root
+        state: touch
+
+    - name: sysctl-network - get relevant sysctl entries - ip_forward
+      shell: sysctl -aN --pattern ip_forward
+      register: ip_forward
+
+    - name: sysctl-network - write rules to config - ip_forward
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 0"
+        state: present
+      loop: "{{ ip_forward.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - mc_forwarding
+      shell: sysctl -aN --pattern mc_forwarding
+      register: mc_forwarding
+
+    - name: sysctl-network - write rules to config - mc_forwarding
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 0"
+        state: present
+      loop: "{{ mc_forwarding.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - send_redirects
+      shell: sysctl -aN --pattern send_redirects
+      register: send_redirects
+
+    - name: sysctl-network - write rules to config - send_redirects
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 0"
+        state: present
+      loop: "{{ send_redirects.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - accept_source_route
+      shell: sysctl -aN --pattern accept_source_route
+      register: accept_source_route
+
+    - name: sysctl-network - write rules to config - accept_source_route
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 0"
+        state: present
+      loop: "{{ accept_source_route.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - accept_redirects
+      shell: sysctl -aN --pattern accept_redirects
+      register: accept_redirects
+
+    - name: sysctl-network - write rules to config - accept_redirects
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 0"
+        state: present
+      loop: "{{ accept_redirects.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - secure_redirects
+      shell: sysctl -aN --pattern secure_redirects
+      register: secure_redirects
+
+    - name: sysctl-network - write rules to config - secure_redirects
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 0"
+        state: present
+      loop: "{{ secure_redirects.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - accept_ra
+      shell: sysctl -aN --pattern accept_ra
+      register: accept_ra
+
+    - name: sysctl-network - write rules to config - accept_ra
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 0"
+        state: present
+      loop: "{{ accept_ra.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - disable_ipv6
+      shell: sysctl -aN --pattern disable_ipv6
+      register: disable_ipv6
+
+    - name: sysctl-network - write rules to config - disable_ipv6
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 1"
+        state: present
+      loop: "{{ disable_ipv6.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - rp_filter
+      shell: sysctl -aN --pattern rp_filter
+      register: rp_filter
+
+    - name: sysctl-network - write rules to config - rp_filter
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 1"
+        state: present
+      loop: "{{ rp_filter.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - tcp_syncookies
+      shell: sysctl -aN --pattern tcp_syncookies
+      register: tcp_syncookies
+
+    - name: sysctl-network - write rules to config - tcp_syncookies
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 1"
+        state: present
+      loop: "{{ tcp_syncookies.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - icmp_echo_ignore_broadcasts
+      shell: sysctl -aN --pattern icmp_echo_ignore_broadcasts
+      register: icmp_echo_ignore_broadcasts
+
+    - name: sysctl-network - write rules to config - icmp_echo_ignore_broadcasts
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 1"
+        state: present
+      loop: "{{ icmp_echo_ignore_broadcasts.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - tcp_rfc1337
+      shell: sysctl -aN --pattern tcp_rfc1337
+      register: tcp_rfc1337
+
+    - name: sysctl-network - write rules to config - tcp_rfc1337
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 1"
+        state: present
+      loop: "{{ tcp_rfc1337.stdout_lines }}"
+
+    - name: sysctl-network - get relevant sysctl entries - icmp_ignore_bogus_error_responses
+      shell: sysctl -aN --pattern icmp_ignore_bogus_error_responses
+      register: icmp_ignore_bogus_error_responses
+
+    - name: sysctl-network - write rules to config - icmp_ignore_bogus_error_responses
+      lineinfile:
+        path: /etc/sysctl.d/98-sec-net.conf
+        line: "{{ item }} = 1"
+        state: present
+      loop: "{{ icmp_ignore_bogus_error_responses.stdout_lines }}"
+
+  when: sysctl_network.stat.exists == false
+  tags:
+    - network
+
+- name: disable ipv6
+  block:
+    - name: boot-option - check if ipv6 is already disabled
+      shell: grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub | grep -c "ipv6.disable=1"
+      register: boot_ipv6_status
+      ignore_errors: true
+
+    - name: boot-option - disable ipv6
+      lineinfile:
+        path: "/etc/default/grub"
+        regexp: 'GRUB_CMDLINE_LINUX_DEFAULT="(.*)"'
+        line: 'GRUB_CMDLINE_LINUX_DEFAULT="\1 ipv6.disable=1"'
+        backrefs: yes
+      when: boot_ipv6_status.stdout == "0"
+
+    - name: update-grub
+      shell: update-grub
+      when: boot_ipv6_status.stdout == "0"
+  tags:
+    - network
+
+- name: firewall - disable dhcp and icmp
+  block:
+    - name: firewall - disable icmp destination-unreachable
+      replace:
+        path: /etc/ufw/before.rules
+        regexp: "(^-A ufw-before-input -p icmp --icmp-type destination-unreachable -j )(.*)$"
+        replace: '\1DROP'
+
+    - name: firewall - disable icmp time-exceeded
+      replace:
+        path: /etc/ufw/before.rules
+        regexp: "(^-A ufw-before-input -p icmp --icmp-type time-exceeded -j )(.*)$"
+        replace: '\1DROP'
+
+    - name: firewall - disable icmp parameter-problem
+      replace:
+        path: /etc/ufw/before.rules
+        regexp: "(^-A ufw-before-input -p icmp --icmp-type parameter-problem -j )(.*)$"
+        replace: '\1DROP'
+
+    - name: firewall - disable icmp echo-request
+      replace:
+        path: /etc/ufw/before.rules
+        regexp: "(^-A ufw-before-input -p icmp --icmp-type echo-request -j )(.*)$"
+        replace: '\1DROP'
+
+    - name: firewall - block dhcp client
+      replace:
+        path: /etc/ufw/before.rules
+        regexp: "(^-A ufw-before-input -p udp --sport 67 --dport 68 -j )(.*)$"
+        replace: '\1DROP'
+  tags:
+    - network

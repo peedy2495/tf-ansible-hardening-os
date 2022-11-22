@@ -1,0 +1,15 @@
+- name: disable i386 architecture
+  command: sudo dpkg --remove-architecture i386
+
+- name: set native repositories
+  template:
+    src: sources.j2
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: nexus
+  tags:
+    - software
+    - repositories

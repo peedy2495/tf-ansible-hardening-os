@@ -1,0 +1,328 @@
+- name: look for existing dconf
+  shell: dpkg -l dconf-cli
+  register: pkg_dconf
+
+- name: dconf - copy base config
+  copy:
+    src: dconf_user
+    dest: /etc/dconf/profile/user
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  when: pkg_dconf.rc == 0
+  tags:
+    - system
+
+- name: dconf - prevent automounts
+  block:
+    - name: dconf - create local configdir
+      file:
+        path: /etc/dconf/db/local.d
+        state: directory
+        mode: "0755"
+
+    - name: dconf - copy automount setup
+      copy:
+        src: dconf_media-automount
+        dest: /etc/dconf/db/local.d/00_media-automount
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: dconf - create lockdir
+      file:
+        path: /etc/dconf/db/local.d/locks
+        state: directory
+        mode: "0755"
+
+    - name: dconf - copy automount lock
+      copy:
+        src: dconf_media-automount_lock
+        dest: /etc/dconf/db/local.d/locks/00_media-automount
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+  when: pkg_dconf.rc == 0
+  notify: dconf update
+  tags:
+    - system
+
+- name: prevent automount - remove autofs
+  apt:
+    pkg:
+      - autofs
+    state: absent
+    purge: yes
+    update_cache: no
+  tags:
+    - system
+
+- name: set grub password
+  lineinfile:
+    path: /etc/grub.d/40_custom
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "set superusers"
+      line: 'set superusers="{{ grub_user }}"'
+    - regexp: "password_pbkdf2"
+      line: "password_pbkdf2 {{ grub_user }} {{ grub_pwdhash }}"
+  register: grub_pwd
+  when: grub_bootpwd and os_type != "server"
+  tags:
+    - system
+
+- name: modify grub defaults
+  lineinfile:
+    path: /etc/default/grub
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - regexp: "(^$|#)GRUB_TIMEOUT"
+      line: "GRUB_TIMEOUT=10"
+    - regexp: "(^$|#)GRUB_TIMEOUT_STYLE"
+      line: "GRUB_TIMEOUT_STYLE=hidden"
+  register: grub_defaults
+  tags:
+    - system
+
+- name: update grub
+  shell: update-grub
+  when: grub_pwd.changed or grub_defaults.changed
+  tags:
+    - system
+
+- name: usbauth
+  block:
+    - name: usbauth - install
+      apt:
+        pkg:
+          - usbauth
+        state: present
+        update_cache: yes
+
+    - name: usbauth - deploy config
+      copy:
+        src: usbauth.conf
+        dest: /etc/
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: usbauth - init
+      shell: usbauth init
+  tags:
+    - system
+
+- name: apparmor
+  block:
+    - name: apparmor - install
+      apt:
+        pkg:
+          - apparmor-utils
+          - apparmor-profiles
+          - apparmor-profiles-extra
+        state: present
+        update_cache: yes
+
+    - name: apparmor - activate profiles
+      shell: aa-enforce /etc/apparmor.d/*
+  tags:
+    - system
+
+- name: more restrictive file permissions ...
+  block:
+    - name: more restrictive file permissions (1/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "root"
+        file_mode: "og-rwx"
+      with_items:
+        - /boot/grub/grub.cfg
+        - /etc/crontab
+        - /etc/cron.hourly
+        - /etc/cron.daily
+        - /etc/cron.weekly
+        - /etc/cron.monthly
+        - /etc/cron.d
+        - /etc/ssh/sshd_config
+
+    - name: more restrictive file permissions (2/7)
+      file:
+        path: "/etc/group"
+        owner: root
+        group: root
+        mode: 644
+
+    - name: more restrictive file permissions (3/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "root"
+        file_mode: "u-x,go-wx"
+      with_items:
+        - /etc/motd
+        - /etc/issue
+        - /etc/issue.net
+        - /etc/passwd
+        - /etc/passwd-
+        - /etc/group-
+
+    - name: more restrictive file permissions (4/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "shadow"
+        file_mode: "o-rwx,g-wx"
+      with_items:
+        - /etc/shadow
+        - /etc/gshadow
+
+    - name: more restrictive file permissions (5/7)
+      include_tasks: sub_permissions.yml
+      vars:
+        file_path: "{{ item }}"
+        file_owner: "root"
+        file_group: "shadow"
+        file_mode: "u-x,go-rwx"
+      with_items:
+        - /etc/shadow~
+        - /etc/gshadow~
+
+    - name: determine host key files
+      find:
+        paths: /etc/ssh
+        patterns: "ssh_host_*_key"
+        use_regex: yes
+        file_type: file
+      register: host_keys
+
+    - name: more restrictive file permissions (6/7)
+      file:
+        path: "{{ item.path }}"
+        owner: root
+        group: root
+        mode: 0600
+      with_items: "{{ host_keys.files }}"
+
+    - name: determine host public key files
+      find:
+        paths: /etc/ssh
+        patterns: "ssh_host_*_key.pub"
+        use_regex: yes
+        file_type: file
+      register: host_pub_keys
+
+    - name: more restrictive file permissions (7/7)
+      file:
+        path: "{{ item.path }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items: "{{ host_pub_keys.files }}"
+  tags:
+    - system
+
+- name: cron & at
+  block:
+    - name: cron & at - prevent blacklisting
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/cron.deny
+        - /etc/at.deny
+
+    - name: cron & at - enable whitelisting
+      file:
+        path: "{{ item }}"
+        state: touch
+        owner: root
+        group: root
+        mode: 0640
+      with_items:
+        - /etc/cron.allow
+        - /etc/at.allow
+  tags:
+    - system
+
+- name: syslogs
+  block:
+    - name: jounald - configure
+      lineinfile:
+        path: /etc/systemd/journald.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "(^$|^#)Storage="
+          line: "Storage=volatile"
+        - regexp: "(^$|^#)ForwardToSyslog="
+          line: "ForwardToSyslog=yes"
+
+    - name: journald - remove logs
+      file:
+        path: /var/log/journal
+        state: absent
+
+    - name: journald - restart daemon
+      shell: "systemctl restart *journald.service"
+
+    - name: syslog - check/set config
+      lineinfile:
+        path: /etc/rsyslog.conf
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "^$FileOwner="
+          line: "$FileOwner syslog"
+        - regexp: "^$FileGroup="
+          line: "$FileGroup adm"
+        - regexp: "^$FileCreateMode"
+          line: "$FileCreateMode 0640"
+        - regexp: "^$DirCreateMode"
+          line: "$DirCreateMode 0755"
+  tags:
+    - system
+
+- name: empty issue files
+  lineinfile:
+    path: "{{ item }}"
+    regexp: ".*"
+    state: absent
+  with_items:
+    - /etc/issue
+    - /etc/issue.net
+  tags:
+    - system
+
+- name: create compiling summaries of reachable binaries
+  block:
+    - name: compiler-options summary of executables and libraries reachable by $PATH
+      script: assets/summary-compiling-check.sh
+      register: summary_compiling_check
+
+    - name: print summary of compiler-options check
+      pause:
+        prompt: "{{ summary_compiling_check.stdout_lines }}"
+        seconds: 2
+  when: compiling_summaries
+  tags:
+    - system
+    - summary-compiling-check
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - system

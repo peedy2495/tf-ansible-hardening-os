@@ -1,0 +1,48 @@
+- name: disable automatic updates/lookups
+  copy:
+    src: 20auto-upgrades
+    dest: /etc/apt/apt.conf.d/
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - upgrades
+
+- name: remove unattended-upgrades
+  apt:
+    name: unattended-upgrades
+    purge: yes
+    autoremove: yes
+  tags:
+    - upgrades
+
+- name: disable daily upgrade timer
+  systemd:
+    name: apt-daily-upgrade.timer
+    state: stopped
+  tags:
+    - upgrades
+
+- name: disable daily upgrade service
+  systemd:
+    name: apt-daily-upgrade.service
+    enabled: no
+    masked: yes
+  tags:
+    - upgrades
+
+- name: disable daily timer
+  systemd:
+    name: apt-daily.timer
+    state: stopped
+  tags:
+    - upgrades
+
+- name: disable daily service
+  systemd:
+    name: apt-daily.service
+    enabled: no
+    masked: yes
+  tags:
+    - upgrades

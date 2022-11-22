@@ -1,0 +1,11 @@
+[Unit]
+Description=Disable Module Loading
+# run after network, filesystems and login have been started
+After=network.target local-fs.target systemd-logind.service
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+User=root
+ExecStart=/sbin/sysctl -w kernel.modules_disabled=1
+[Install]
+WantedBy=multi-user.target

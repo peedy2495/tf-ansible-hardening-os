@@ -1,0 +1,6 @@
+# create your own token in your proxmox environment
+# create a token.export file like example above
+# source assets/token.export
+ 
+export PM_API_TOKEN_ID='terraform@pve!terraform-token'
+export PM_API_TOKEN_SECRET='bedcfcae-be31-53c8-b8a9-fa635a9f7af4'

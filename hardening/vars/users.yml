@@ -1,0 +1,32 @@
+root_pwd: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1"
+
+# define only one chief admin
+users_admin:
+  - {
+      name: a007,
+      comment: "John Doe (admin),,,,administrative",
+      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
+      state: present,
+      chief: yes,
+    }
+  - {
+      name: a123,
+      comment: "Joe Smith (admin),,,,administrative",
+      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
+      state: present,
+      chief: no,
+    }
+
+users_usual:
+  - {
+      name: u007,
+      comment: "John Doe,,,,normal user",
+      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
+      state: present,
+    }
+  - {
+      name: u123,
+      comment: "Joe Smith,,,,normal user",
+      hash: "$6$qLS/PtSS3uUd2Q7i$glkCYjA493RkGyMXvVBRYedad9IbYdGU3BAmd98Ry3NyfmhlTnMufltRT51o6XXOvA7RSC8WbtFcbKsVPlRag1",
+      state: present,
+    }

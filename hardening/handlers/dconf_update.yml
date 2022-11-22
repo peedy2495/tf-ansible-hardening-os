@@ -1,0 +1,6 @@
+- block:
+    - name: dconf - update configs
+      shell: dconf update
+
+    - name: dconf - correct permissions of local db
+      shell: chmod go+r /etc/dconf/db/local

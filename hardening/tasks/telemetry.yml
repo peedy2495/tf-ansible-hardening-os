@@ -1,0 +1,30 @@
+#remove, because apport has been removed
+#- name: configure apport
+#  block:
+#    - name: apport - disable
+#      replace:
+#        path: /etc/default/apport
+#        regexp: "enabled=1"
+#        replace: "enabled=0"
+#
+#    - name: apport - disable service
+#      service:
+#        name: apport
+#        state: stopped
+#        enabled: no
+#  tags:
+#    - telemetry
+
+- name: popularity - remove cronjob
+  file:
+    path: /etc/cron.d/popularity-contest
+    state: absent
+  tags:
+    - telemetry
+
+- name: popularity - remove daily cronjob
+  file:
+    path: /etc/cron.daily/popularity-contest
+    state: absent
+  tags:
+    - telemetry

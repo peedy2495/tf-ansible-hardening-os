@@ -1,0 +1,14 @@
+# maximum password age
+PASS_MAX_DAYS {{ pwd_age_max }}
+
+# minimum password age
+PASS_MIN_DAYS {{ pwd_age_min }}
+
+# days to warn a user of expiring password
+PASS_WARN_AGE {{ pwd_age_warn }}
+
+# use strongest password hashing method
+ENCRYPT_METHOD SHA512
+
+# use restrictive umask
+UMASK 027

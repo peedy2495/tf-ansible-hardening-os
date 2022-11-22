@@ -1,0 +1,16 @@
+- name: set ntp source
+  lineinfile:
+    path: "/etc/systemd/timesyncd.conf"
+    regexp: '^#\s*NTP.*$'
+    line: "NTP={{ ntp_source }}"
+    backrefs: yes
+    state: present
+  tags:
+    - ntp
+
+- name: restart ntp client
+  service:
+    name: systemd-timesyncd
+    state: restarted
+  tags:
+    - ntp

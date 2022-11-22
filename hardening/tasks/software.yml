@@ -1,0 +1,130 @@
+- name: upgrade system
+  block:
+    - name: killing any running update process
+      shell: pkill apt-get; pkill dpkg; sleep 2
+    - name: upgrading
+      apt:
+        update_cache: yes
+        upgrade: yes
+      register: apt_upgrade
+      retries: 5
+      until: apt_upgrade is success
+  when: upgrade_packages
+  notify: reboot system
+  tags:
+    - software
+    - upgrade
+
+- name: installing software packages
+  apt:
+    update_cache: yes
+    pkg:
+      - unzip
+      - binutils
+      - elfutils
+      - clamtk
+      - libpam-pwquality
+      - intel-microcode
+      - amd64-microcode
+    state: present
+  tags:
+    - software
+
+- name: remove unused packages
+  apt:
+    pkg:
+      - cloud-init
+      - iputils-tracepath
+      - snapd
+      #- tcpdump        # for examining network issues needed
+      - telnet
+      - ldap-utils
+      - nis
+      - openbsd-inetd
+      - rsh-client
+      - talk
+      - ubuntu-report
+      - whoopsie
+      - xinetd
+      - apport
+      - apport-symptoms
+      - at
+      - cloud-guest-utils
+      - cloud-initramfs-copymods
+      - cloud-initramfs-dyn-netconf
+      - curl
+      - dnsutils
+      - eject
+      - ftp
+      #- git            # for devel stuff needed
+      #- iw             # ! hung desktop system !
+      - netcat-openbsd
+      - popularity-contest
+      #- rsync          # for making backups needed
+      #- xserver-xorg*  # servers, only
+      #- xorg*          # servers, only
+    state: absent
+    purge: yes
+    update_cache: no
+  tags:
+    - software
+
+- name: autoremove orphanned packages
+  apt:
+    autoremove: yes
+    purge: yes
+  notify:
+    - clear caches
+  tags:
+    - software
+    - upgrade
+
+- name: remove snapd from $PATH
+  replace:
+    path: "/etc/environment"
+    regexp: ":/snap/bin"
+    replace: ""
+  tags:
+    - software
+
+- name: remove snapd from sudoers
+  replace:
+    path: "/etc/sudoers"
+    regexp: ":/snap/bin"
+    replace: ""
+  tags:
+    - software
+
+- name: grab hardening-check from devscrips
+  block:
+    - name: create temporary devscripts dir
+      file:
+        path: /tmp/devscripts
+        state: directory
+
+    - name: download devscripts
+      shell: apt download devscripts
+
+    - name: umpack devscripts
+      shell: dpkg -x devscripts_*_amd64.deb /tmp/devscripts/
+
+    - name: copy hardening-check
+      copy:
+        remote_src: yes
+        src: /tmp/devscripts/usr/bin/hardening-check
+        dest: /usr/bin/hardening-check
+        mode: 755
+        owner: root
+        group: root
+
+    - name: remove temporary devscripts dir
+      file:
+        path: /tmp/devscripts
+        state: absent
+  tags:
+    - software
+
+- name: run queued handlers
+  meta: flush_handlers
+  tags:
+    - software

@@ -1,0 +1,11 @@
+- name: more restrictive file permissions
+  block:
+    - name: set file permissions
+      file:
+        path: "{{ file_path }}"
+        owner: "{{ file_owner }}"
+        group: "{{ file_group }}"
+        mode: "{{ file_mode }}"
+  rescue:
+    - debug:
+        msg: "File not found: {{ file_path }}"
