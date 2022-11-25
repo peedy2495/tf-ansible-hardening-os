@@ -27,15 +27,16 @@
         - regexp: "shelldetector:"
           line: "shelldetector: false"
         - regexp: "antirootkits_mail_to:"
-          line: "antirootkits_mail_to: 'root@localhost'"
+          line: "antirootkits_mail_to: '{{ mail_dest }}'"
         - regexp: "antirootkits_mail_from:"
-          line: "antirootkits_mail_from: 'root@localhost'"
+          line: "antirootkits_mail_from: '{{ mail_dest }}'"
   connection: local
   vars:
     ansible_become: false
   tags:
     - ext_roles
     - antirootkits
+    - wip
 
 - name: play ansible-antirootkits role
   import_role:

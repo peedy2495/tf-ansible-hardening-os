@@ -33,6 +33,8 @@ tmpfs_size_run: 100M
 
 ntp_source: pool.ntp.org
 
+set_root_password: yes
+
 # Failed login attempts to lock the system
 pwd_syslock: "20"
 
@@ -61,3 +63,7 @@ clamav_offlinedb: yes
 clamav_localcache: "{{nexus_proxy_proto}}://{{nexus_proxy}}:{{nexus_proxy_port}}/repository/clamav-db/"
 clamav_dbmirror: "database.clamav.net"
 clamav_cldcompress: "yes"
+
+localmail: yes
+# only on disabled localmail affected
+extmail_addr: nobody@example.com

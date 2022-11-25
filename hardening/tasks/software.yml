@@ -15,10 +15,11 @@
     - software
     - upgrade
 
-- name: installing software packages
+- name: installing package dependencies
   apt:
     update_cache: yes
     pkg:
+      - whois
       - unzip
       - binutils
       - elfutils

@@ -19,11 +19,11 @@
 - name: users
   import_tasks: users.yml
 
-- name: pull and run external roles out of github
-  import_tasks: ext_roles.yml
-
 - name: mailing
   import_tasks: mailing.yml
+
+- name: pull and run external roles out of github
+  import_tasks: ext_roles.yml
 
 - name: misc system configurations
   import_tasks: system.yml

@@ -19,6 +19,30 @@
   tags:
     - mailing
 
+- name: load users
+  include_vars: users.yml
+  when: localmail
+  tags:
+    - mailing
+
+- name: set admin mail on local
+  set_fact:
+    mail_dest: "root@localhost"
+    mail_root_fwd: "{{ item.name }}@localhost"
+  when: ({{ localmail }}) and ({{ item.chief }}) and "{{ item.state }}" == "present"
+  with_items:
+    - "{{users_admin}}"
+  tags:
+    - mailing
+
+- name: set admin mail on external
+  set_fact:
+    mail_dest: "{{ extmail_addr }}"
+    mail_root_fwd: "{{ extmail_addr }}"
+  when: not localmail
+  tags:
+    - mailing
+
 - name: system - create mail forwarding from root to major administrative user
   lineinfile:
     path: /root/.forward
@@ -26,7 +50,7 @@
     mode: 640
     owner: root
     group: root
-    line: "{{ chief_admin }}@localhost"
+    line: "{{ mail_root_fwd }}"
     state: present
   tags:
     - mailing

@@ -38,8 +38,12 @@ Nexus connection parameters are defined in group_vars/all.yml
 - define major settings in *var/main.yml*
 - define users in *var/user.yml*
   - create salted hash passwords with `mkpasswd -m sha-512` (already set to: `ChangeMe!` )
-  - designate a *chief_admin* user in *var/users.yml* for receiving root mails.
+  - designate a *mail_dest* user in *var/users.yml* for receiving root mails.
 
+## Dependencies:
+Following roles will be included:
+- [ansible-rootkits](https://github.com/mablanco/ansible-antirootkits)
+- [ansible-role-clamav](https://github.com/geerlingguy/ansible-role-clamav)
 
 ## Remarks:
 Uninstalling linux-modules-extra-[kernelversion] causes boot-stop  

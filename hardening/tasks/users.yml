@@ -4,21 +4,13 @@
   include_vars: users.yml
   tags:
     - users
-    - wip
-
-- name: user dict testing
-  debug:
-    msg: "Name is: {{item.name}}"
-  with_items:
-    - "{{users_admin}}"
-  tags:
-    - wip
 
 - name: change root password
   user:
     name: "root"
     update_password: always
     password: "{{ root_pwd }}"
+  when: set_root_password
   tags:
     - users
 
@@ -36,15 +28,6 @@
     append: yes
     groups: sudo,users
     state: "{{ item.state }}"
-  with_items:
-    - "{{users_admin}}"
-  tags:
-    - users
-
-- name: set admin chief
-  set_fact:
-    chief_admin: "{{ item.name }}"
-  when: ({{ item.chief }}) and "{{ item.state }}" == "present"
   with_items:
     - "{{users_admin}}"
   tags:
