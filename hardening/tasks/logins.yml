@@ -11,6 +11,16 @@
 
 - name: wordlists
   block:
+    - name: set var vor githubusercontent for internet
+      set_fact:
+        raw_githubusercontent_url: "https://raw.githubusercontent.com"
+      when: not nexus
+
+    - name: set var vor githubusercontent for internet
+      set_fact:
+        raw_githubusercontent_url: "{{ nexus_proxy_proto }}://{{ nexus_proxy }}:{{ nexus_proxy_port }}/repository/raw-githubusercontent"
+      when: nexus
+
     - name: load wordlists
       include_vars: wordlists.yml
 

@@ -1,17 +1,17 @@
 cracklib_wordlists:
   - {
       name: ignis-10M.txt,
-      url: "{{ nexus_proxy_proto }}://{{ nexus_proxy }}:{{ nexus_proxy_port }}/repository/raw-githubusercontent/FlameOfIgnis/Pwdb-Public/master/wordlists/ignis-10M.txt",
+      url: "{{ raw_githubusercontent_url }}/FlameOfIgnis/Pwdb-Public/master/wordlists/ignis-10M.txt",
     }
   - {
       name: ignis-german-150.txt,
-      url: "{{ nexus_proxy_proto }}://{{ nexus_proxy }}:{{ nexus_proxy_port }}/repository/raw-githubusercontent/FlameOfIgnis/Pwdb-Public/master/wordlists/language-specifics/ignis-german-150.txt",
+      url: "{{ raw_githubusercontent_url }}/FlameOfIgnis/Pwdb-Public/master/wordlists/language-specifics/ignis-german-150.txt",
     }
   - {
       name: german-scrabble.txt,
-      url: "{{ nexus_proxy_proto }}://{{ nexus_proxy }}:{{ nexus_proxy_port }}/repository/raw-githubusercontent/enz/german-wordlist/master/words",
+      url: "{{ raw_githubusercontent_url }}/enz/german-wordlist/master/words",
     }
   - {
       name: german-misc.txt,
-      url: "{{ nexus_proxy_proto }}://{{ nexus_proxy }}:{{ nexus_proxy_port }}/repository/raw-githubusercontent/danielmiessler/SecLists/master/Passwords/german_misc.txt",
+      url: "{{ raw_githubusercontent_url }}/danielmiessler/SecLists/master/Passwords/german_misc.txt",
     }
