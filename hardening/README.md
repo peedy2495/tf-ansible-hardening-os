@@ -4,6 +4,10 @@ Refer current supported distributions in top level [README.md](https://github.co
 This playbook role has been embed in a terraform deployment to test the rollout behaviours in an virtual enviroment, first.
 Using terraform, you have to provide a cloud-init template in your virtual environment.
 
+***Recommendation***
+This playbook runs a loooong time by using bare ansible.  
+Use [anbsible_mitogen](https://github.com/mitogen-hq/mitogen) for fast acceleration, 
+
 ## To harden a physical machine, following prerequisites have to be fullifyied:
 
 - offline OS installation
