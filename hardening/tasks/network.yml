@@ -249,5 +249,6 @@
         path: /etc/ufw/before.rules
         regexp: "(^-A ufw-before-input -p udp --sport 67 --dport 68 -j )(.*)$"
         replace: '\1DROP'
+  when: set_firewall
   tags:
     - network

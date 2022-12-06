@@ -30,6 +30,9 @@ compiling_summaries: no
 set_hostname: yes
 domain: example.com
 
+# modify firewall with restrictive rules
+set_firewall: yes
+
 # using those mounts in volatile ram
 tmpfs_size_tmp: 512M
 tmpfs_size_crash: 100M
