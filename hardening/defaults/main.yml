@@ -1,5 +1,13 @@
 ---
-# nexus cashed package proxy
+# hostname relates to your host alias in your inventory file
+set_hostname: yes
+domain: example.com
+
+# ssh access
+# !Warning! Disabling ssh will prevent later ansible plays after current running session, too!
+login_ssh: yes
+
+## nexus cashed package proxy
 nexus: yes
 
 nexus_proxy: "192.168.100.1"
@@ -8,10 +16,6 @@ nexus_proxy_proto: "http"
 
 # update system
 upgrade_packages: yes
-
-# ssh access
-# !Warning! Disabling ssh will prevent later ansible plays after current running session, too!
-login_ssh: yes
 
 # handle issues in virtual environments
 virt_expand_volumes: yes
@@ -25,10 +29,6 @@ blacklist_unused: no
 
 # print statistics of vulnerabilies in executable binaries - time expensive!
 compiling_summaries: no
-
-# hostname relates to your host alias in your inventory file
-set_hostname: yes
-domain: example.com
 
 # modify firewall with restrictive rules
 set_firewall: yes
@@ -65,13 +65,13 @@ grub_user: "jdoe"
 # paste new hash out of grub-mkpasswd-pbkdf2
 grub_pwdhash: "grub.pbkdf2.sha512.10000.6C207A1A4C50FFF1826B578BF35FD051B9E7981104D1D5D3E10FF24E5A04770D33A78A09E72FC9BB4269483E925C88CEC30124154C9F341A43FB6A1A54CF5803.C1EED493E9AA1554453B55208DEC54751374CC2E4829669540FCA3BC4AE0952ED6F997B52A15E3465D8916DB342C42928A0B5993136F1CCC03E560E95BC7F7A8"
 
+localmail: yes
+# only on disabled localmail affected
+extmail_addr: nobody@example.com
+
 # clamav configuration
 clamav_offlinedb: yes
 # following values will only set on clamav_offlinedb(yes)
 clamav_localcache: "{{nexus_proxy_proto}}://{{nexus_proxy}}:{{nexus_proxy_port}}/repository/clamav-db/"
 clamav_dbmirror: "database.clamav.net"
 clamav_cldcompress: "yes"
-
-localmail: yes
-# only on disabled localmail affected
-extmail_addr: nobody@example.com
