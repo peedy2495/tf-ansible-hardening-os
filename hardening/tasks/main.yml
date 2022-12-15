@@ -42,3 +42,6 @@
 
 - name: restrictive logins
   import_tasks: logins.yml
+
+- name: configure bootloader
+  import_tasks: bootloader.yml

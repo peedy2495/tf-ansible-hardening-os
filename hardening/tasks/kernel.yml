@@ -196,13 +196,21 @@
         force: yes
         owner: root
         group: root
-        mode: 0644
+        mode: 0755
     - name: start kernel-modules-disabled.service
       systemd:
         name: kernel-modules-disabled.service
         daemon_reload: yes
         enabled: yes
         state: started
+    - name: preload kernel-modules on boot for using usb attached storage
+      copy:
+        src: usb-storage.conf
+        dest: /etc/modules-load.d/
+        force: yes
+        owner: root
+        group: root
+        mode: 0644
   notify: reboot system
   tags:
     - kernel
