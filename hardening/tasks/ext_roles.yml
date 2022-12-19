@@ -36,7 +36,6 @@
   tags:
     - ext_roles
     - antirootkits
-    - wip
 
 - name: play ansible-antirootkits role
   import_role:

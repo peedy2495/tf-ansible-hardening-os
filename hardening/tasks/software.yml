@@ -15,6 +15,20 @@
     - software
     - upgrade
 
+- name: installing cpu microcodes
+  apt:
+    update_cache: yes
+    pkg:
+      - intel-microcode
+      - iucode-tool
+      - amd64-microcode
+    state: "{{ item }}"
+    # be shure of pulling those packages in case of using a cached proxy
+  with_items: ["absent", "present"]
+  tags:
+    - software
+    - wip
+
 - name: installing package dependencies
   apt:
     update_cache: yes
@@ -25,11 +39,8 @@
       - elfutils
       - clamtk
       - libpam-pwquality
-      - intel-microcode
-      - amd64-microcode
-    state: "{{ item }}"
-    # be shure of pulling those packages in case of using a cached proxy
-    with_items: ["absent", "present"]
+      - iucode-tool
+    state: present
   tags:
     - software
 

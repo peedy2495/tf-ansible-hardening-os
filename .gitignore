@@ -1,3 +1,4 @@
+.vscode
 id_*
 ansible-antirootkits
 ansible-role-clamav
