@@ -1,6 +1,6 @@
 [Unit]
 Description=Disable Module Loading
-# run after network, filesystems and login have been started
+# run after whole system has been started
 After=multi-user.target
 Requires=multi-user.target
 StartLimitIntervalSec=0
