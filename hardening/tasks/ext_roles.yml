@@ -14,22 +14,22 @@
     - name: modify ansible-rootkits role vars
       lineinfile:
         path: "{{ playbook_dir }}/ansible-antirootkits/defaults/main.yml"
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
+        regexp: "^(.*){{ item.key }}:"
+        line: "{{ item.key }}: {{ item.value }}"
         state: present
       with_items:
-        - regexp: "rkhunter:"
-          line: "rkhunter: true"
-        - regexp: "chkrootkit:"
-          line: "chkrootkit: true"
-        - regexp: "unhide:"
-          line: "unhide: true"
-        - regexp: "shelldetector:"
-          line: "shelldetector: false"
-        - regexp: "antirootkits_mail_to:"
-          line: "antirootkits_mail_to: '{{ mail_dest }}'"
-        - regexp: "antirootkits_mail_from:"
-          line: "antirootkits_mail_from: '{{ mail_dest }}'"
+        - key: "rkhunter"
+          value: "true"
+        - key: "chkrootkit"
+          value: "true"
+        - key: "unhide"
+          value: "true"
+        - key: "shelldetector"
+          value: "false"
+        - key: "antirootkits_mail_to"
+          value: "{{ mail_dest }}"
+        - key: "antirootkits_mail_from"
+          value: "{{ mail_dest }}"
   connection: local
   vars:
     ansible_become: false
@@ -51,7 +51,7 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-    - regexp: "(^$|^#)ALLOWIPCPROC="
+    - regexp: "(^|^#)ALLOWIPCPROC="
       line: "ALLOWIPCPROC=/usr/bin/gnome-shell"
   tags:
     - ext_roles

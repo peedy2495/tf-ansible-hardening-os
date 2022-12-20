@@ -224,14 +224,14 @@
     - name: jounald - configure
       lineinfile:
         path: /etc/systemd/journald.conf
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
+        regexp: "(^|^#){{ item.key }}"
+        line: "{{ item.key }}={{ item.value }}"
         state: present
       with_items:
-        - regexp: "(^$|^#)Storage="
-          line: "Storage=volatile"
-        - regexp: "(^$|^#)ForwardToSyslog="
-          line: "ForwardToSyslog=yes"
+        - key: "Storage"
+          value: "volatile"
+        - key: "ForwardToSyslog"
+          value: "yes"
 
     - name: journald - remove logs
       file:
@@ -244,20 +244,21 @@
     - name: syslog - check/set config
       lineinfile:
         path: /etc/rsyslog.conf
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
+        regexp: "^{{ item.key }}"
+        line: "{{ item.key }} {{ item.value }}"
         state: present
       with_items:
-        - regexp: "^$FileOwner="
-          line: "$FileOwner syslog"
-        - regexp: "^$FileGroup="
-          line: "$FileGroup adm"
-        - regexp: "^$FileCreateMode"
-          line: "$FileCreateMode 0640"
-        - regexp: "^$DirCreateMode"
-          line: "$DirCreateMode 0755"
+        - key: "$FileOwner"
+          value: "syslog"
+        - key: "$FileGroup"
+          value: "adm"
+        - key: "$FileCreateMode"
+          value: "0640"
+        - key: "$DirCreateMode"
+          value: "0755"
   tags:
     - system
+    - wip
 
 - name: empty issue files
   lineinfile:

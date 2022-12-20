@@ -27,7 +27,6 @@
   with_items: ["absent", "present"]
   tags:
     - software
-    - wip
 
 - name: installing package dependencies
   apt:

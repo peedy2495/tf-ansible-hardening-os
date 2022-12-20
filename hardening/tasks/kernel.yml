@@ -27,37 +27,37 @@
     mode: 644
     owner: root
     group: root
-    regexp: "(.*){{ item.variable }}\ "
-    line: "{{ item.variable }} = {{ item.value }}"
+    regexp: "^(.*){{ item.key }}\ "
+    line: "{{ item.key }} = {{ item.value }}"
     state: present
   with_items:
-    - variable: "kernel.randomize_va_space"
+    - key: "kernel.randomize_va_space"
       value: "2"
     # hard- / hymlink, fifo, regular protection, ptrace scope
-    - variable: "fs.protected_hardlinks"
+    - key: "fs.protected_hardlinks"
       value: "1"
-    - variable: "fs.protected_symlinks"
+    - key: "fs.protected_symlinks"
       value: "1"
-    - variable: "fs.protected_fifos"
+    - key: "fs.protected_fifos"
       value: "2"
-    - variable: "fs.protected_regular"
+    - key: "fs.protected_regular"
       value: "2"
-    - variable: "kernel.yama.ptrace_scope"
+    - key: "kernel.yama.ptrace_scope"
       value: "3"
     # kernel-pointer, dmesg
-    - variable: "kernel.kptr_restrict"
+    - key: "kernel.kptr_restrict"
       value: "1"
-    - variable: "kernel.dmesg_restrict"
+    - key: "kernel.dmesg_restrict"
       value: "1"
     # kernel und process-crashdumps
-    - variable: "fs.suid_dumpable"
+    - key: "fs.suid_dumpable"
       value: "0"
     # berkeley packet filter (bpf)
-    - variable: "kernel.unprivileged_bpf_disabled"
+    - key: "kernel.unprivileged_bpf_disabled"
       value: "1"
-    - variable: "net.core.bpf_jit_enable"
+    - key: "net.core.bpf_jit_enable"
       value: "1"
-    - variable: "net.core.bpf_jit_harden"
+    - key: "net.core.bpf_jit_harden"
       value: "1"
   notify: reboot system
   tags:

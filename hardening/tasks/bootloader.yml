@@ -1,14 +1,14 @@
 - name: set grub password
   lineinfile:
     path: /etc/grub.d/40_custom
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
+    regexp: "{{ item.key }}"
+    line: "{{ item.key }}{{ item.value }}"
     state: present
   with_items:
-    - regexp: "set superusers"
-      line: 'set superusers="{{ grub_user }}"'
-    - regexp: "password_pbkdf2"
-      line: "password_pbkdf2 {{ grub_user }} {{ grub_pwdhash }}"
+    - key: "set superusers="
+      value: '"{{ grub_user }}"'
+    - key: "password_pbkdf2 "
+      value: "{{ grub_user }} {{ grub_pwdhash }}"
   register: grub_pwd
   when: grub_bootpwd and os_type != "server"
   tags:
@@ -17,14 +17,14 @@
 - name: modify grub defaults
   lineinfile:
     path: /etc/default/grub
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
+    regexp: "(^|^#){{ item.key }}"
+    line: "{{ item.key }}={{ item.value }}"
     state: present
   with_items:
-    - regexp: "(^$|#)GRUB_TIMEOUT"
-      line: "GRUB_TIMEOUT=10"
-    - regexp: "(^$|#)GRUB_TIMEOUT_STYLE"
-      line: "GRUB_TIMEOUT_STYLE=hidden"
+    - key: "GRUB_TIMEOUT"
+      value: "10"
+    - key: "GRUB_TIMEOUT_STYLE"
+      value: "hidden"
   register: grub_defaults
   tags:
     - boot
