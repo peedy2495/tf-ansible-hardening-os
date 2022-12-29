@@ -17,13 +17,13 @@ Use [anbsible_mitogen](https://github.com/mitogen-hq/mitogen) for fast accelerat
 - define /boot not less than 1G because of containing multiple kernel/initrd images
 - manual partitioning during installation as LVM-Volumes:
 
-| logical volume  | filesystem | mountpoint     | recommended size                        |
-|-----------------|------------|----------------|-----------------------------------------|
-| lv-root         | ext4       | /              | >=80GB                                  |
-| lv-home         | ext4       | /home          | ~10GB on servers; rest on desktop inst  |
-| lv-vartmp       | ext4       | /var/tmp       | >=10GB                                  |
-| lv-varlog       | ext4       | /var/log       | >=10GB                                  |
-| lv-varlogaudit  | ext4       | /var/log/audit | >=10GB                                  |
+| logical volume  | filesystem | mountpoint     | mountoptions                  |recommended size                        |
+|-----------------|------------|----------------|-------------------------------|----------------------------------------|
+| lv-root         | ext4       | /              | defaults                      | >=80GB                                 |
+| lv-home         | ext4       | /home          | relatime,nodev,nosuid,noexec  | ~10GB on servers; rest on desktop inst |
+| lv-vartmp       | ext4       | /var/tmp       | relatime,nodev,nosuid,noexec  | >=10GB                                 |
+| lv-varlog       | ext4       | /var/log       | relatime,nodev,nosuid,noexec  | >=10GB                                 |
+| lv-varlogaudit  | ext4       | /var/log/audit | relatime,nodev,nosuid,noexec  | >=10GB                                 |
 
   except lv-root set all partitions in fstab with relatim,nodev,nosuid  
   except lv-root and lv-home(?) set all patitions in fstab with noexec
