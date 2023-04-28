@@ -1,0 +1,14 @@
+- hosts: all
+  roles:
+    - hardening
+  vars:
+    set_hostname: no
+    set_repositories: no
+    use_nexus: yes
+    upgrade_packages: yes
+    virt_expand_volumes: no
+    set_hosts: no
+    set_firewall: yes
+    set_fstab: no
+    set_ntp: no
+    set_grub_bootpwd: no

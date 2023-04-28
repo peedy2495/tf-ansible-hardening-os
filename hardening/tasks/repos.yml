@@ -9,7 +9,7 @@
     group: root
     mode: 0644
     backup: yes
-  when: nexus
+  when: set_repositories and use_nexus
   tags:
     - software
     - repositories

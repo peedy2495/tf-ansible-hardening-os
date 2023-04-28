@@ -29,6 +29,7 @@
     path: /etc/hosts
     line: "{{ nexus_proxy }} nexus nexus"
     state: present
+  when: set_hosts
   tags:
     - network
     - etc-hosts

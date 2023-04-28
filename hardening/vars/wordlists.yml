@@ -1,11 +1,11 @@
 cracklib_wordlists:
   - {
       name: ignis-10M.txt,
-      url: "{{ raw_githubusercontent_url }}/FlameOfIgnis/Pwdb-Public/master/wordlists/ignis-10M.txt",
+      url: "{{ raw_githubusercontent_url }}/xbl3/Pwdb-Public_FlameOfIgnis/master/wordlists/ignis-10M.txt",
     }
   - {
       name: ignis-german-150.txt,
-      url: "{{ raw_githubusercontent_url }}/FlameOfIgnis/Pwdb-Public/master/wordlists/language-specifics/ignis-german-150.txt",
+      url: "{{ raw_githubusercontent_url }}/xbl3/Pwdb-Public_FlameOfIgnis/master/wordlists/language-specifics/ignis-german-150.txt",
     }
   - {
       name: german-scrabble.txt,

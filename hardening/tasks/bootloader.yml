@@ -10,7 +10,7 @@
     - key: "password_pbkdf2 "
       value: "{{ grub_user }} {{ grub_pwdhash }}"
   register: grub_pwd
-  when: grub_bootpwd and os_type != "server"
+  when: set_grub_bootpwd and os_type != "server"
   tags:
     - boot
 

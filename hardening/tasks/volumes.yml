@@ -47,6 +47,7 @@
         state: present
         path: "/etc/fstab"
         line: "proc                             /proc              proc      rw,relatime,nodev,noexec,nosuid,hidepid=2                      0       0"
+  when: set_fstab
   tags:
     - volumes
     - fstab

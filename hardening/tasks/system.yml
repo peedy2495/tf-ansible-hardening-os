@@ -1,53 +1,71 @@
-- name: look for existing dconf
-  shell: dpkg -l dconf-cli
-  register: pkg_dconf
+# - name: look for existing dconf
+#   shell: dpkg -l dconf-cli
+#   register: pkg_dconf
 
-- name: dconf - copy base config
-  copy:
-    src: dconf_user
-    dest: /etc/dconf/profile/user
-    force: yes
-    owner: root
-    group: root
-    mode: 0644
-  when: pkg_dconf.rc == 0
-  tags:
-    - system
+# - name: dconf - copy base config
+#   copy:
+#     src: dconf_user
+#     dest: /etc/dconf/profile/user
+#     force: yes
+#     owner: root
+#     group: root
+#     mode: 0644
+#   when: pkg_dconf.rc == 0
+#   tags:
+#     - system
 
-- name: dconf - prevent automounts
+# - name: dconf - prevent automounts
+#   block:
+#     - name: dconf - create local configdir
+#       file:
+#         path: /etc/dconf/db/local.d
+#         state: directory
+#         mode: "0755"
+
+#     - name: dconf - copy automount setup
+#       copy:
+#         src: dconf_media-automount
+#         dest: /etc/dconf/db/local.d/00_media-automount
+#         force: yes
+#         owner: root
+#         group: root
+#         mode: 0644
+
+#     - name: dconf - create lockdir
+#       file:
+#         path: /etc/dconf/db/local.d/locks
+#         state: directory
+#         mode: "0755"
+
+#     - name: dconf - copy automount lock
+#       copy:
+#         src: dconf_media-automount_lock
+#         dest: /etc/dconf/db/local.d/locks/00_media-automount
+#         force: yes
+#         owner: root
+#         group: root
+#         mode: 0644
+#   when: pkg_dconf.rc == 0
+#   notify: dconf update
+#   tags:
+#     - system
+
+- name: dconf - loginscreen - hide userlist
   block:
-    - name: dconf - create local configdir
-      file:
-        path: /etc/dconf/db/local.d
-        state: directory
-        mode: "0755"
-
-    - name: dconf - copy automount setup
-      copy:
-        src: dconf_media-automount
-        dest: /etc/dconf/db/local.d/00_media-automount
-        force: yes
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: dconf - create lockdir
-      file:
-        path: /etc/dconf/db/local.d/locks
-        state: directory
-        mode: "0755"
-
-    - name: dconf - copy automount lock
-      copy:
-        src: dconf_media-automount_lock
-        dest: /etc/dconf/db/local.d/locks/00_media-automount
-        force: yes
-        owner: root
-        group: root
-        mode: 0644
-  when: pkg_dconf.rc == 0
-  notify: dconf update
+    - name: dconf - modify greeter settings
+      lineinfile:
+        path: /usr/share/gdm/greeter.dconf-defaults
+        regexp: '(^|^# ){{ item.key }}\='
+        line: "{{ item.key }}={{ item.value }}"
+        state: present
+      with_items:
+        - key: "disable-user-list"
+          value: "true"
+    - name: dconf - apply modified greeter config
+      shell: "dpkg-reconfigure gdm3"
+  when: remove_login_userlist
   tags:
+    - system_hide_userlist
     - system
 
 - name: prevent automount - remove autofs
